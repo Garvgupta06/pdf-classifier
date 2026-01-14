@@ -1,0 +1,13 @@
+{
+    "terminal.integrated.suggest.enabled": false,
+    "javascript.suggest.enabled": false,
+    "typescript.suggest.enabled": false,
+    "python.autoComplete.extraPaths": [
+        false,
+    ],
+    "editor.acceptSuggestionOnCommitCharacter": true,
+    "editor.inlineSuggest.edits.renderSideBySide": "never",
+    "editor.inlineSuggest.edits.showLongDistanceHint": false,
+    "editor.inlineSuggest.enabled": false,
+    "editor.inlineSuggest.experimental.emptyResponseInformation": false
+}
