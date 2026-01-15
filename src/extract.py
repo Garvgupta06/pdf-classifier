@@ -1,11 +1,44 @@
 from pathlib import Path
-from pyPDF2 import PdfReader
-def extract_books():
-    directory = Path("D:\\pdf-classifier\\data\\books")
-    for pdf in directory.iterdir():
-        if pdf.is_file():
-            print(pdf)
+import random
+import pymupdf
+import re
+def normalize_text(text: str):
+    text = text.replace('\t',' ')
+    text = re.sub(r' +',' ',text)
+    text = re.sub(r'\n+', '\n', text)
+    return text.strip()
 
-extract_books()    
+def extract_books():
+    # extracts text from the books present in the books directory 
+    input_dir = Path("D:\\pdf-classifier\\data\\books")
+    output_dir = Path("D:\\pdf-classifier\\data_extracted\\books")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for pdf_path in input_dir.iterdir():
+        if not pdf_path.is_file() or pdf_path.suffix.lower() != ".pdf":
+            continue
+        try:
+            doc =  pymupdf.open(pdf_path)
+            total_pages = doc.page_count
+            
+            pages_to_extract = min(50,total_pages)
+            middle = total_pages // 2
+            start_pages = max(0,middle - pages_to_extract //2)
+            end_pages = min(total_pages,start_pages+pages_to_extract)
+            extracted_text = []
+            for page_num in range(start_pages, end_pages):
+                page = doc[page_num]
+                text = page.get_text()
+                extracted_text.append(f"=== PAGE {page_num + 1} ===")
+                extracted_text.append(text)
+            doc.close()
+            full_text = '\n'.join(extracted_text)
+            normalized = normalize_text(full_text)
+
+            output_path = output_dir / f"{pdf_path.stem}.txt"
+            output_path.write_text(normalized, encoding = 'utf-8')
+            print(f"extracted {pdf_path.name} -> {output_path.name}")
+        except Exception as e:
+            print(f"Error processing {pdf_path.name}: {e}")
+extract_books() 
         
 
