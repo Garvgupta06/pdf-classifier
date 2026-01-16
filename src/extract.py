@@ -16,6 +16,12 @@ def extract_books():
     for pdf_path in input_dir.iterdir():
         if not pdf_path.is_file() or pdf_path.suffix.lower() != ".pdf":
             continue
+
+        output_path = output_dir / f"{pdf_path.stem}.txt"
+        if output_path.exists():
+            print(f"skipping {pdf_path.name} (already extracted)")
+            continue
+
         try:
             doc =  pymupdf.open(pdf_path)
             total_pages = doc.page_count
@@ -39,6 +45,139 @@ def extract_books():
             print(f"extracted {pdf_path.name} -> {output_path.name}")
         except Exception as e:
             print(f"Error processing {pdf_path.name}: {e}")
-extract_books() 
+
+def extract_papers():
+    section_patterns = [
+        r'^(Abstract)\s*$',
+        r'^(Introduction)\s*$',
+        r'^(Related Work|Background|Literature Review)\s*$',
+        r'^(Approach|Method|Methods|Methodology)\s*$',
+        r'^(Experiments?|Experimental Setup)\s*$',
+        r'^(Results?|Findings)\s*$',
+        r'^(Discussion)\s*$',
+        r'^(Conclusion|Conclusions|Summary)\s*$',
+        r'^(References|Bibliography)\s*$',
+        r'^(Acknowledgments?)\s*$'
+    ]
+    combined_patterns = '|'.join(section_patterns)
+    input_dir = Path("D:\\pdf-classifier\\data\\research-paper")
+    output_dir = Path("D:\\pdf-classifier\\data_extracted\\papers")
+    output_dir.mkdir(parents = True, exist_ok = True)
+    for pdf_path in input_dir.iterdir():
+        if not pdf_path.is_file() or pdf_path.suffix.lower()!=".pdf":
+            continue
+        output_path = output_dir / f"{pdf_path.stem}.txt"
+        if output_path.exists():
+            print(f"skipping {pdf_path.name} (already exists) ")
+            continue
+
+        try:
+            total_text = []
+            doc = pymupdf.open(pdf_path)
+            total_pages = doc.page_count
+
+            for pages in range(total_pages):
+                page = doc[pages]
+                text = page.get_text()
+
+                lines= text.split('\n')
+                processed_lines = []
+                for line in lines:
+                    stripped = line.strip()
+
+                    if re.match(combined_patterns,stripped,re.IGNORECASE):
+                        section_name = stripped.upper()
+                        processed_lines.append(f"\n==={section_name}===")
+                    else:
+                        processed_lines.append(line)
+
+                total_text.append('\n'.join(processed_lines))
+
+            doc.close()
+
+            full_text= '\n'.join(total_text)
+            normalized = normalize_text(full_text)
+
+            output_path.write_text(normalized,encoding = 'utf-8')
+            print(f"Extracted {pdf_path.name} --> {output_path.name}")
+        except Exception as e:
+            print(f"Error processing {pdf_path.name}: {e}")
+
+
+def extract_notes():
+    input_dir = Path("D:\\pdf-classifier\\data\\notes")
+    output_dir = Path("D:\\pdf-classifier\\data_extracted\\notes")
+    output_dir.mkdir(parents = True,exist_ok  = True)
+    for pdf_path in input_dir.iterdir():
+        if not pdf_path.is_file() or pdf_path.suffix.lower() != ".pdf":
+            continue
+        output_path = output_dir / f"{pdf_path.stem}.txt"
+        if output_path.exists():
+            print(f"skipping {pdf_path.name} (already extracted)")
+            continue
+
+        try:
+            doc = pymupdf.open(pdf_path)
+            extracted_text = []
+            total_pages = doc.page_count
+            for pages in range(total_pages):
+                page = doc[pages]
+                text = page.get_text()
+                extracted_text.append(f"=== Page {pages+1} ===")
+                extracted_text.append(text)
+            doc.close()
+
+            full_text = '\n'.join(extracted_text)
+            normalized = normalize_text(full_text)
+
+            output_path.write_text(normalized,encoding = 'utf-8')
+            print(f"Extracted {pdf_path.name} --> {output_path.name}")
+
+
+        except Exception as e:
+            print(f"Error processing {pdf_path.name}: {e}")
+
+
+def extract_docs():
+    input_dir = Path("D:\\pdf-classifier\\data\\official-docs")
+    output_dir = Path("D:\\pdf-classifier\\data_extracted\\docs")
+    output_dir.mkdir(parents = True,exist_ok  = True)
+    for pdf_path in input_dir.iterdir():
+        if not pdf_path.is_file() or pdf_path.suffix.lower() != ".pdf":
+            continue
+        output_path = output_dir / f"{pdf_path.stem}.txt"
+        if output_path.exists():
+            print(f"skipping {pdf_path.name} (already extracted)")
+            continue
+
+        try:
+            doc = pymupdf.open(pdf_path)
+            extracted_text = []
+            total_pages = doc.page_count
+            for pages in range(total_pages):
+                page = doc[pages]
+                text = page.get_text()
+                extracted_text.append(f"=== Page {pages+1} ===")
+                extracted_text.append(text)
+            doc.close()
+
+            full_text = '\n'.join(extracted_text)
+            normalized = normalize_text(full_text)
+
+            output_path.write_text(normalized,encoding = 'utf-8')
+            print(f"Extracted {pdf_path.name} --> {output_path.name}")
+
+
+        except Exception as e:
+            print(f"Error processing {pdf_path.name}: {e}")
+
+
+extract_books()
+extract_papers()
+extract_docs()
+extract_notes()
+
+
+
         
 
